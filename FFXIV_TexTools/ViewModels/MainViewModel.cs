@@ -1,16 +1,16 @@
 ﻿// FFXIV TexTools
 // Copyright © 2019 Rafael Gonzalez - All Rights Reserved
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -86,7 +86,7 @@ namespace FFXIV_TexTools.ViewModels
             task.Wait();
 
             var exception = task.Exception;
-            if(exception != null)
+            if (exception != null)
             {
                 throw exception;
             }
@@ -100,7 +100,6 @@ namespace FFXIV_TexTools.ViewModels
             }
 
             CacheTimer.Elapsed += UpdateDependencyQueueCount;
-
         }
 
         public void UpdateDependencyQueueCount(object sender, System.Timers.ElapsedEventArgs e)
@@ -115,24 +114,23 @@ namespace FFXIV_TexTools.ViewModels
         /// <summary>
         /// This function is called on a separate thread, *while* the main thread is blocked.
         /// This means a few things.
-        ///   1.  You cannot access the view's UI elements (Thread safety error & uninitialized) 
+        ///   1.  You cannot access the view's UI elements (Thread safety error & uninitialized)
         ///   2.  You cannot use Dispatcher.Invoke (Deadlock)
         ///   3.  You cannot spawn a new full-fledged windows form (Thread safety error) (Basic default popups are OK)
         ///   4.  You cannot shut down the application (Thread safety error)
-        ///   
+        ///
         /// As such, the return value indicates if we want to gracefully shut down the application.
         /// (True for success/continue, False for failure/graceful shutdown.)
-        /// 
+        ///
         /// Exceptions are checked and rethrown on the main thread.
-        /// 
+        ///
         /// This is really 100% only for things that can be safely checked and sanitized
         /// without external code references or UI interaction beyond basic windows dialogs.
         /// </summary>
         /// <returns></returns>
         public async Task<bool> Initialize()
         {
-
-            var success =  await CheckIndexFiles();
+            var success = await CheckIndexFiles();
             if (!success)
             {
                 return false;
@@ -141,13 +139,13 @@ namespace FFXIV_TexTools.ViewModels
             try
             {
                 await CheckGameDxVersion();
-            } catch
+            }
+            catch
             {
                 // Unable to determine version, skip it.
             }
 
             return true;
-
         }
 
         /// <summary>
@@ -156,7 +154,6 @@ namespace FFXIV_TexTools.ViewModels
         /// <returns></returns>
         private async Task CheckGameDxVersion()
         {
-
             var dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
                       "\\My Games\\FINAL FANTASY XIV - A Realm Reborn";
 
@@ -190,12 +187,12 @@ namespace FFXIV_TexTools.ViewModels
             {
                 if (Properties.Settings.Default.DX_Version != "11")
                 {
-                    // Set the User's DX Mode to 11 in TexTools to match 
+                    // Set the User's DX Mode to 11 in TexTools to match
                     Properties.Settings.Default.DX_Version = "11";
                     Properties.Settings.Default.Save();
                     DXVersionText = "DX: 11";
 
-                    if(XivCache.Initialized)
+                    if (XivCache.Initialized)
                     {
                         var gi = XivCache.GameInfo;
                         XivCache.SetGameInfo(gi.GameDirectory, gi.GameLanguage, 11, true, true, gi.LuminaDirectory, gi.UseLumina);
@@ -204,10 +201,9 @@ namespace FFXIV_TexTools.ViewModels
             }
             else
             {
-
                 if (Properties.Settings.Default.DX_Version != "9")
                 {
-                    // Set the User's DX Mode to 9 in TexTools to match 
+                    // Set the User's DX Mode to 9 in TexTools to match
                     var gi = XivCache.GameInfo;
                     Properties.Settings.Default.DX_Version = "9";
                     Properties.Settings.Default.Save();
@@ -220,9 +216,7 @@ namespace FFXIV_TexTools.ViewModels
                     XivCache.SetGameInfo(gi.GameDirectory, gi.GameLanguage, 9, true, true, gi.LuminaDirectory, gi.UseLumina);
                 }
             }
-
         }
-
 
         private async Task<bool> CheckIndexFiles()
         {
@@ -248,7 +242,7 @@ namespace FFXIV_TexTools.ViewModels
                 {
                     var indexBackupsDirectory = new DirectoryInfo(Settings.Default.Backup_Directory);
                     var success = await problemChecker.RestoreBackups(indexBackupsDirectory);
-                    if(!success)
+                    if (!success)
                     {
                         FlexibleMessageBox.Show("Unable to restore Index Backups, shutting down TexTools.", "Critical Error Shutdown", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                         return false;
@@ -256,7 +250,7 @@ namespace FFXIV_TexTools.ViewModels
                 }
                 else
                 {
-                    FlexibleMessageBox.Show("Shutting Down TexTools.", "Critical Error Shutdown",  MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    FlexibleMessageBox.Show("Shutting Down TexTools.", "Critical Error Shutdown", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                     return false;
                 }
             }
@@ -374,7 +368,7 @@ namespace FFXIV_TexTools.ViewModels
                     var fileLastModifiedTime = File.GetLastWriteTime(
                         $"{installDirectory}\\{XivDataFile._0A_Exd.GetDataFileName()}.win32.dat0");
 
-                    if (fileLastModifiedTime.Year < 2021)
+                    if (/*fileLastModifiedTime.Year < 2021*/false)
                     {
                         SetDirectories(false);
                     }
@@ -445,14 +439,12 @@ namespace FFXIV_TexTools.ViewModels
             }
         }
 
-
         /// <summary>
         /// Performs post-patch modlist corrections and validation, prompting user also to generate backups after a successful completion.
         /// </summary>
         /// <returns></returns>
         public async Task DoPostPatchCleanup()
         {
-
             FlexibleMessageBox.Show(_mainWindow.Win32Window, UIMessages.PatchDetectedMessage, "Post Patch Cleanup Starting", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             MainWindow.MakeHighlander();
 
@@ -469,14 +461,13 @@ namespace FFXIV_TexTools.ViewModels
 
             var workerStatus = XivCache.CacheWorkerEnabled;
 
-            if(workerStatus)
+            if (workerStatus)
             {
                 // Stop the cache worker if it's running.
                 XivCache.CacheWorkerEnabled = false;
             }
             try
             {
-
                 var modding = new Modding(_gameDirectory);
                 var _index = new Index(_gameDirectory);
                 var _dat = new Dat(_gameDirectory);
@@ -490,7 +481,6 @@ namespace FFXIV_TexTools.ViewModels
                 var modList = modding.GetModList();
 
                 Dictionary<XivDataFile, IndexFile> indexFiles = new Dictionary<XivDataFile, IndexFile>();
-
 
                 // Cache our currently enabled stuff.
                 List<Mod> enabledMods = modList.Mods.Where(x => x.enabled == true).ToList();
@@ -511,7 +501,6 @@ namespace FFXIV_TexTools.ViewModels
                         var oldOriginalOffset = mod.data.originalOffset;
                         var modOffset = mod.data.modOffset;
 
-
                         // In any event where an offset does not match either of our saved offsets, we must assume this is a new
                         // default file offset for post-patch.
                         if (index1Value != oldOriginalOffset && index1Value != modOffset && index1Value != 0)
@@ -524,7 +513,8 @@ namespace FFXIV_TexTools.ViewModels
                             {
                                 mod.data.originalOffset = index1Value;
                                 mod.enabled = false;
-                            } else
+                            }
+                            else
                             {
                                 // Oh dear.  The new index is fucked.  Is the old Index Ok?
                                 type = _dat.GetFileType(oldOriginalOffset, df);
@@ -536,7 +526,8 @@ namespace FFXIV_TexTools.ViewModels
                                     // But mark the index value as invalid, so that we stomp on the index value after this.
                                     index1Value = -1;
                                     mod.enabled = false;
-                                } else
+                                }
+                                else
                                 {
                                     // Okay... Maybe the new Index2 Value?
                                     if (index2Value != 0)
@@ -555,7 +546,8 @@ namespace FFXIV_TexTools.ViewModels
                                             // We be fucked.
                                             throw new Exception("Unable to determine working original offset for file:" + mod.fullPath);
                                         }
-                                    } else
+                                    }
+                                    else
                                     {
                                         // We be fucked.
                                         throw new Exception("Unable to determine working original offset for file:" + mod.fullPath);
@@ -566,7 +558,7 @@ namespace FFXIV_TexTools.ViewModels
                         else if (index2Value != oldOriginalOffset && index2Value != modOffset && index2Value != 0)
                         {
                             // Our Index 1 was normal, but our Index 2 is changed to an unknown value.
-                            // If the index 2 points to a valid file, we must assume that this new file 
+                            // If the index 2 points to a valid file, we must assume that this new file
                             // is our new base data offset.
 
                             var type = _dat.GetFileType(index2Value, df);
@@ -583,7 +575,7 @@ namespace FFXIV_TexTools.ViewModels
 
                                 if (validTypes.Contains(type) && oldOriginalOffset != 0)
                                 {
-                                    // Old index is fine, so keep using that, but set the index2 value to invalid to ensure we 
+                                    // Old index is fine, so keep using that, but set the index2 value to invalid to ensure we
                                     // stomp on the current broken index value.
                                     index2Value = -1;
                                 }
@@ -632,7 +624,7 @@ namespace FFXIV_TexTools.ViewModels
                             if (mod.IsCustomFile())
                             {
                                 // Okay, in this case this is recoverable as the mod is a custom addition anyways, so we can just delete it.
-                                if(!toRemove.Contains(mod))
+                                if (!toRemove.Contains(mod))
                                 {
                                     toRemove.Add(mod);
                                 }
@@ -661,7 +653,7 @@ namespace FFXIV_TexTools.ViewModels
                 }
 
                 // Save any index changes we made.
-                foreach(var dkv in indexFiles)
+                foreach (var dkv in indexFiles)
                 {
                     await _index.SaveIndexFile(dkv.Value);
                 }
@@ -691,7 +683,7 @@ namespace FFXIV_TexTools.ViewModels
                     {
                         if (mod.data.modOffset == 0 || mod.data.originalOffset == 0)
                         {
-                            if(mod.data.originalOffset == 0 && mod.enabled)
+                            if (mod.data.originalOffset == 0 && mod.enabled)
                             {
                                 // This is awkward.  We have a mod whose data got bashed, but has no valid original offset to restore.
                                 // So the indexes here are fucked if we do, fucked if we don't.
@@ -704,7 +696,6 @@ namespace FFXIV_TexTools.ViewModels
                         }
                         else
                         {
-
                             if (mod.enabled)
                             {
                                 var df = IOUtil.GetDataFileFromPath(mod.fullPath);
@@ -766,17 +757,15 @@ namespace FFXIV_TexTools.ViewModels
                 await modding.ToggleMods(true, enabledMods.Select(x => x.fullPath));
 
                 FlexibleMessageBox.Show(_mainWindow.Win32Window, UIMessages.PostPatchComplete, "Post-Patch Process Complete", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-
             }
-            catch(Exception Ex)
+            catch (Exception Ex)
             {
                 // Show the user the error, then let them go about their business of fixing things.
                 FlexibleMessageBox.Show(_mainWindow.Win32Window, String.Format(UIMessages.PostPatchError, Ex.Message), "Post-Patch Failure", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
             finally
             {
-
-                if(resetLumina)
+                if (resetLumina)
                 {
                     // Reset lumina mode back to on if we disabled it to perform update checks.
                     XivCache.SetGameInfo(gi.GameDirectory, gi.GameLanguage, gi.DxMode, true, false, gi.LuminaDirectory, true);
@@ -786,7 +775,6 @@ namespace FFXIV_TexTools.ViewModels
                 await _mainWindow.UnlockUi(this);
             }
         }
-
 
         /// <summary>
         /// The DX Version
@@ -901,8 +889,6 @@ namespace FFXIV_TexTools.ViewModels
             DXVersionText = $"DX: {Properties.Settings.Default.DX_Version}";
         }
 
-
-
         /// <summary>
         /// Enables all mods in the mod list
         /// </summary>
@@ -927,7 +913,8 @@ namespace FFXIV_TexTools.ViewModels
                 try
                 {
                     await modding.ToggleAllMods(true, progressIndicator);
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     FlexibleMessageBox.Show("Failed to Enable all Mods: \n\nError:" + ex.Message, "Enable Mod Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     err = true;
@@ -965,9 +952,11 @@ namespace FFXIV_TexTools.ViewModels
             {
                 var modding = new Modding(_gameDirectory);
                 bool err = false;
-                try { 
+                try
+                {
                     await modding.ToggleAllMods(false, progressIndicator);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     FlexibleMessageBox.Show("Failed to Disable all Mods: \n\nError:" + ex.Message, "Disable Mod Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     err = true;
@@ -984,7 +973,6 @@ namespace FFXIV_TexTools.ViewModels
             {
                 await _progressController.CloseAsync();
             }
-
         }
 
         /// <summary>
@@ -1008,7 +996,7 @@ namespace FFXIV_TexTools.ViewModels
             }
         }
 
-        #endregion
+        #endregion MenuItems
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -1017,6 +1005,5 @@ namespace FFXIV_TexTools.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
     }
 }
